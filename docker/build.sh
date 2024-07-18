@@ -1,0 +1,1 @@
+docker build -t h2fa_r-cnn . -f Dockerfile
