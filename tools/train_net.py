@@ -42,6 +42,7 @@ from detectron2.evaluation import (
     SemSegEvaluator,
     verify_results,
     CrossDomainDetectionEvaluator,
+    PedestrianDetectionEvaluator
 )
 from detectron2.modeling import GeneralizedRCNNWithTTA
 from detectron2.data.build import build_detection_train_source_loader
@@ -160,6 +161,8 @@ class Trainer(DefaultTrainer):
             return LVISEvaluator(dataset_name, cfg, True, output_folder)
         elif evaluator_type == "cross_domain":
             return CrossDomainDetectionEvaluator(dataset_name) 
+        elif evaluator_type == "pedestrian":
+            return PedestrianDetectionEvaluator(dataset_name, True, output_folder)
         if len(evaluator_list) == 0:
             raise NotImplementedError(
                 "no Evaluator for the dataset {} with the type {}".format(
