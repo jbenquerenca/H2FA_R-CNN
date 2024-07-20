@@ -4,6 +4,7 @@ docker run \
       -it \
       -e "color_prompt=yes" \
       -t \
+      --shm-size 32g \
       --rm \
       -v $HOME/dissertacao/models/H2FA_R-CNN:/local \
       -v $HOME/dissertacao/data:/data \

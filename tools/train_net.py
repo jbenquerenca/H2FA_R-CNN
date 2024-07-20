@@ -76,12 +76,13 @@ class Trainer(DefaultTrainer):
         """
         If you want to do something with the data, you can wrap the dataloader.
         """
-        while True:
-            data = next(self._data_loader_iter)
+        # while True:
+            # data = next(self._data_loader_iter)
 
-            if all([len(x["instances"]) > 0 for x in data]):
-                break
+            # if all([len(x["instances"]) > 0 for x in data]):
+            #     break
 
+        data = next(self._data_loader_iter)
         source_data = next(self._source_data_loader_iter)
         data_time = time.perf_counter() - start
 

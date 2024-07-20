@@ -371,11 +371,16 @@ def annotations_to_instances(annos, image_size, mask_format="polygon"):
             "gt_masks", "gt_keypoints", if they can be obtained from `annos`.
             This is the format that builtin models expect.
     """
-    boxes = [BoxMode.convert(obj["bbox"], obj["bbox_mode"], BoxMode.XYXY_ABS) for obj in annos]
+    # MODIFIED
+    if annos:
+        boxes = [BoxMode.convert(obj["bbox"], obj["bbox_mode"], BoxMode.XYXY_ABS) for obj in annos]
+        classes = [obj["category_id"] for obj in annos]
+    else:
+        boxes = [BoxMode.convert([0., 0., 0., 0.], BoxMode.XYWH_ABS, BoxMode.XYXY_ABS)]
+        classes = [1]
     target = Instances(image_size)
     target.gt_boxes = Boxes(boxes)
 
-    classes = [obj["category_id"] for obj in annos]
     classes = torch.tensor(classes, dtype=torch.int64)
     target.gt_classes = classes
 

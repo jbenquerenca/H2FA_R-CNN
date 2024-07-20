@@ -56,11 +56,14 @@ def get_image_level_gt(targets, num_classes):
     if targets is None:
         return None, None, None
     gt_classes_img = [torch.unique(t.gt_classes, sorted=True) for t in targets]
+    if gt_classes_img[0].nelement()==0: 
+        device = gt_classes_img[0].device
+        gt_classes_img = [torch.tensor([1]).to(device)]
     gt_classes_img_int = [gt.to(torch.int64) for gt in gt_classes_img]
     gt_classes_img_oh = torch.cat(
         [
             torch.zeros(
-                (1, num_classes), dtype=torch.float, device=gt_classes_img[0].device
+                (1, num_classes+1), dtype=torch.float, device=gt_classes_img[0].device
             ).scatter_(1, torch.unsqueeze(gt, dim=0), 1)
             for gt in gt_classes_img_int
         ],
@@ -817,13 +820,14 @@ class StandardROIHeads(ROIHeads):
     
         objectness_scores = torch.unsqueeze(torch.cat([p.objectness_logits for p in proposals]), dim=1)
     
-        cls_scores = F.softmax(cls_predictions[:, :-1], dim=1)
+        # cls_scores = F.softmax(cls_predictions[:, :-1], dim=1)
+        cls_scores = F.softmax(cls_predictions[:, :], dim=1)
     
         max_cls_ids = torch.unsqueeze(torch.argmax(cls_predictions[:, :-1], dim=1), dim=1)
         objectness_scores = torch.zeros_like(cls_scores).scatter_(
             dim=1, index=max_cls_ids, src=objectness_scores
         )
-    
+
         pred_img_cls_logits = torch.cat(
             [
                 torch.sum(cls*F.softmax(obj, dim=0), dim=0, keepdim=True)

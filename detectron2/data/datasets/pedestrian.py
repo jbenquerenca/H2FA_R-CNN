@@ -1,20 +1,16 @@
-import json, os
+import json, os, torch
 from collections import defaultdict
 from detectron2.structures import BoxMode
 from detectron2.data import MetadataCatalog, DatasetCatalog
 
 def read_image_info_and_annotations(annotation_path):
     annotations_json, annotations = json.load(open(annotation_path)), defaultdict(dict)
-    for img in annotations_json["images"]: 
-        annotations[img["id"]]["img_info"] = img
-        annotations[img["id"]]["instances"] = list()
-    for anno in annotations_json["annotations"]: 
-        annotations[anno["image_id"]]["instances"].append(anno)
+    for img in annotations_json["images"]: annotations[img["id"]]["img_info"], annotations[img["id"]]["instances"] = img, list()
+    for anno in annotations_json["annotations"]: annotations[anno["image_id"]]["instances"].append(anno)
     return annotations
 
 def load_pedestrian_instances(dirname: str, split: str):
-    dicts = list()
-    annotations = read_image_info_and_annotations(os.path.join(dirname, "annotations", f"{split}.json"))
+    annotations, dicts = read_image_info_and_annotations(os.path.join(dirname, "annotations", f"{split}.json")), list()
     for img_dict in annotations.values():
         r = {
             "file_name": os.path.join(dirname, "images", img_dict["img_info"]["file_name"]),
@@ -26,19 +22,8 @@ def load_pedestrian_instances(dirname: str, split: str):
 
         for instance in img_dict["instances"]:
             if ("ignore" in instance and not instance["ignore"]) or (not instance["iscrowd"]):
-                r["annotations"].append({
-                    "category_id": 1,
-                    "bbox": instance["bbox"],
-                    "bbox_mode": BoxMode.XYWH_ABS
-                })
+                r["annotations"].append({"category_id": 0, "bbox": instance["bbox"], "bbox_mode": BoxMode.XYWH_ABS})
         
-        if not r["annotations"]:
-            r["annotations"].append({
-                "category_id": 0,
-                "bbox": [0., 1., 2., 3.],
-                "bbox_mode": BoxMode.XYWH_ABS
-            })
-
         dicts.append(r)
     return dicts
 
