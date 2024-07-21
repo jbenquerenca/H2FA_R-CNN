@@ -56,9 +56,11 @@ def get_image_level_gt(targets, num_classes):
     if targets is None:
         return None, None, None
     gt_classes_img = [torch.unique(t.gt_classes, sorted=True) for t in targets]
-    if gt_classes_img[0].nelement()==0: 
-        device = gt_classes_img[0].device
-        gt_classes_img = [torch.tensor([1]).to(device)]
+    gt_classes_img_temp = list()
+    for gt_class in gt_classes_img:
+        if gt_class.nelement()==0: gt_classes_img_temp.append(torch.tensor([1]).to(gt_classes_img[0].device)) 
+        else: gt_classes_img_temp.append(gt_class)
+    gt_classes_img = gt_classes_img_temp
     gt_classes_img_int = [gt.to(torch.int64) for gt in gt_classes_img]
     gt_classes_img_oh = torch.cat(
         [
