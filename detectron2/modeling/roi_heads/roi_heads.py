@@ -56,22 +56,29 @@ def get_image_level_gt(targets, num_classes):
     if targets is None:
         return None, None, None
     gt_classes_img = [torch.unique(t.gt_classes, sorted=True) for t in targets]
-    gt_classes_img_temp = list()
-    for gt_class in gt_classes_img:
-        if gt_class.nelement()==0: gt_classes_img_temp.append(torch.tensor([1]).to(gt_classes_img[0].device)) 
-        else: gt_classes_img_temp.append(gt_class)
-    gt_classes_img = gt_classes_img_temp
     gt_classes_img_int = [gt.to(torch.int64) for gt in gt_classes_img]
-    gt_classes_img_oh = torch.cat(
-        [
-            torch.zeros(
-                (1, num_classes+1), dtype=torch.float, device=gt_classes_img[0].device
-            ).scatter_(1, torch.unsqueeze(gt, dim=0), 1)
-            for gt in gt_classes_img_int
-        ],
-        dim=0,
-    )
-    return gt_classes_img, gt_classes_img_int, gt_classes_img_oh
+    if num_classes > 1:
+        gt_classes_img_oh = torch.cat(
+            [
+                torch.zeros(
+                    (1, num_classes), dtype=torch.float, device=gt_classes_img[0].device
+                ).scatter_(1, torch.unsqueeze(gt, dim=0), 1)
+                for gt in gt_classes_img_int
+            ],
+            dim=0,
+        )
+        return gt_classes_img, gt_classes_img_int, gt_classes_img_oh
+    else:
+        tensor_list = []
+        for gt in gt_classes_img_int:
+            if gt.nelement()==0:
+                one_hot = torch.zeros((1, num_classes), dtype=torch.float, device=gt_classes_img[0].device)
+                one_hot.scatter_(1, torch.unsqueeze(gt, dim=0), 1)
+                tensor_list.append(one_hot)
+            else:
+                tensor_list.append(torch.ones((1, num_classes), dtype=torch.float, device=gt_classes_img[0].device))
+        result_tensor = torch.cat(tensor_list, dim=0)
+        return gt_classes_img, gt_classes_img_int, result_tensor
 
 
 def select_foreground_proposals(
@@ -822,8 +829,8 @@ class StandardROIHeads(ROIHeads):
     
         objectness_scores = torch.unsqueeze(torch.cat([p.objectness_logits for p in proposals]), dim=1)
     
-        # cls_scores = F.softmax(cls_predictions[:, :-1], dim=1)
-        cls_scores = F.softmax(cls_predictions[:, :], dim=1)
+        if self.num_classes > 1: cls_scores = F.softmax(cls_predictions[:, :-1], dim=1) 
+        else: cls_scores = torch.sigmoid(cls_predictions[:, :-1])
     
         max_cls_ids = torch.unsqueeze(torch.argmax(cls_predictions[:, :-1], dim=1), dim=1)
         objectness_scores = torch.zeros_like(cls_scores).scatter_(

@@ -478,7 +478,7 @@ class CAMHead(nn.Module):
             in_channels = 512
         else:
             raise KeyError("Unknown backbone output name: {}".format(backbone_out_shape.keys()))
-        self.num_classes = num_classes + 1
+        self.num_classes = num_classes
 
         self.cam_conv = nn.Conv2d(in_channels, self.num_classes, kernel_size=1, bias=False)
         weight_init.c2_msra_fill(self.cam_conv)
@@ -506,23 +506,13 @@ class CAMHead(nn.Module):
         """
         gt_classes_img = [torch.unique(t.gt_classes, sorted=True) for t in targets]
         gt_classes_img_int = [gt.to(torch.int64) for gt in gt_classes_img]
-        tensor_list = []
-        for gt in gt_classes_img_int:
-            if gt.nelement() == 0:
-                tensor_list.append(torch.tensor([[0., 1.]], dtype=torch.float, device=gt_classes_img[0].device))
-            else:
-                tensor_list.append(torch.tensor([[1., 0.]], dtype=torch.float, device=gt_classes_img[0].device))
-        result_tensor = torch.cat(tensor_list, dim=0)
-        return result_tensor
-        # if self.num_classes == 1:
-        #     gt_classes_img_oh = torch.cat(
-        #         [
-        #             torch.zeros(
-        #                 (1, self.num_classes), dtype=torch.float, device=gt_classes_img[0].device
-        #             ).scatter_(1, torch.unsqueeze(gt, dim=0), 1)
-        #             for gt in gt_classes_img_int
-        #         ],
-        #         dim=0,
-        #     )
-        #     return gt_classes_img_oh
-        # else:
+        gt_classes_img_oh = torch.cat(
+            [
+                torch.zeros(
+                    (1, self.num_classes), dtype=torch.float, device=gt_classes_img[0].device
+                ).scatter_(1, torch.unsqueeze(gt, dim=0), 1)
+                for gt in gt_classes_img_int
+            ],
+            dim=0,
+        )
+        return gt_classes_img_oh

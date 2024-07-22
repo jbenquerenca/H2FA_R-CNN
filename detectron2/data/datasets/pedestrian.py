@@ -29,7 +29,7 @@ def load_pedestrian_instances(dirname: str, split: str):
 
 def register_pedestrian_dataset(name, dirname, split):
     DatasetCatalog.register(name, lambda: load_pedestrian_instances(dirname, split))
-    MetadataCatalog.get(name).set(thing_classes=["_background", "pedestrian"], dirname=dirname, split=split)
+    MetadataCatalog.get(name).set(thing_classes=["pedestrian", "_background"], dirname=dirname, split=split)
 
 def register_all_pedestrian_datasets(root):
     SPLITS = [
