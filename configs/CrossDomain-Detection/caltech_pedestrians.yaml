@@ -19,7 +19,7 @@ TEST:
 DATASETS:
   TRAIN: ('caltech_pedestrians_train',)
   TRAIN_SOURCE: ('eurocity_train',)
-  TEST: ('caltech_pedestrians_val',)
+  TEST: ('caltech_pedestrians_test',)
 SOLVER:
   STEPS: (18000,)
   MAX_ITER: 24000

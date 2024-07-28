@@ -31,7 +31,7 @@ class PedestrianDetectionEvaluator(DatasetEvaluator):
             for k in range(num_instance):
                 result = {
                     "image_id": img_id,
-                    "category_id": classes[k],
+                    "category_id": 1,
                     "bbox": boxes[k],
                     "score": scores[k],
                 }
@@ -72,9 +72,13 @@ class PedestrianDetectionEvaluator(DatasetEvaluator):
                 f.write(json.dumps(coco_results))
                 f.flush()
 
-        self._logger.info("Evaluating predictions ...")
-        MRs = validate(self.json_file, coco_results)
-        self._logger.info('[Reasonable: %.2f%%], [Reasonable_Small: %.2f%%], [Heavy: %.2f%%], [All: %.2f%%]' %
-                           (MRs[0] * 100, MRs[1] * 100, MRs[2] * 100, MRs[3] * 100))
-        self._results["Pedestrian Detection"] = dict(Reasonable=MRs[0]*100, Reasonable_Small=MRs[1]*100, Heavy=MRs[2]*100, All=MRs[3]*100)
+        if coco_results:
+            self._logger.info("Evaluating predictions ...")
+            MRs = validate(self.json_file, coco_results)
+            self._logger.info('[Reasonable: %.2f%%], [Reasonable_Small: %.2f%%], [Heavy: %.2f%%], [All: %.2f%%]' %
+                            (MRs[0] * 100, MRs[1] * 100, MRs[2] * 100, MRs[3] * 100))
+            self._results["Pedestrian Detection"] = dict(Reasonable=MRs[0]*100, Reasonable_Small=MRs[1]*100, Heavy=MRs[2]*100, All=MRs[3]*100)
+        else:
+            self._logger.warning("No detections!")
+            self._results["Pedestrian Detection"] = dict(Reasonable=-1., Reasonable_Small=-1., Heavy=-1., All=-1.)
         return copy.deepcopy(self._results)
