@@ -1,4 +1,4 @@
-import json, os, torch
+import json, os
 from collections import defaultdict
 from detectron2.structures import BoxMode
 from detectron2.data import MetadataCatalog, DatasetCatalog
