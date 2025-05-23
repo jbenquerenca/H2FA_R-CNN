@@ -19,14 +19,14 @@ TEST:
 DATASETS:
   TRAIN: ('tju-pedestrian-traffic_train',)
   TRAIN_SOURCE: ('eurocity_train',)
-  TEST: ('tju-pedestrian-traffic_val',)
+  TEST: ('tju-pedestrian-traffic_test',)
 SOLVER:
   STEPS: (18000,)
   MAX_ITER: 24000
   WARMUP_ITERS: 500
   IMS_PER_BATCH: 2 # image number for each domain
   BASE_LR: 0.005
-OUTPUT_DIR: "./output/test"
+OUTPUT_DIR: "./output/tju_test"
 DATALOADER:
   FILTER_EMPTY_ANNOTATIONS: False
   NUM_WORKERS: 4
